@@ -25,6 +25,7 @@ cgmath = "^ 0.17"
 futures = "^ 0.3"
 png = "^ 0.16"
 pixels = "^0.9"
+tiny-skia = "0.8"
 
 [build-dependencies]
 glsl-to-spirv = "^ 0.1"

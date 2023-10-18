@@ -1,4 +1,5 @@
 use pixels::{Pixels, SurfaceTexture};
+use tiny_skia::{Color, Paint, PathBuilder, Pixmap, Stroke, Transform};
 
 use super::WINDOW_DIMENSIONS;
 
@@ -18,22 +19,25 @@ impl VoiceEyeRenderer {
     }
 
     pub fn draw_frame(&mut self) {
+        let mut pixmap = Pixmap::new(WIDTH, HEIGHT).unwrap();
+        pixmap.fill(Color::from_rgba8(100, 100, 255, 255));
+
+        let circle = PathBuilder::from_circle(600.0, 600.0, 200.0).unwrap();
+        let s = Stroke::default();
+
+        let mut paint = Paint::default();
+        paint.set_color(Color::from_rgba8(255, 10, 10, 255));
+
+        pixmap.fill_path(
+            &circle,
+            &paint,
+            tiny_skia::FillRule::Winding,
+            Transform::identity(),
+            None,
+        );
+
         let frame = self.pixels.get_frame();
-
-        for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
-            let x = (i % WIDTH as usize) as i16;
-            let y = (i / WIDTH as usize) as i16;
-
-            let inside_the_box = x >= 10 && x < 10 + 100 && y >= 20 && y < 20 + 100;
-
-            let rgba = if inside_the_box {
-                [0x5e, 0x48, 0xe8, 0xff]
-            } else {
-                [0x48, 0xb2, 0xe8, 0xff]
-            };
-
-            pixel.copy_from_slice(&rgba);
-        }
+        frame.copy_from_slice(pixmap.data());
 
         let _ = self.pixels.render();
     }
