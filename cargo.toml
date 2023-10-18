@@ -24,6 +24,7 @@ zerocopy = "^ 0.3"
 cgmath = "^ 0.17"
 futures = "^ 0.3"
 png = "^ 0.16"
+pixels = "^0.9"
 
 [build-dependencies]
 glsl-to-spirv = "^ 0.1"

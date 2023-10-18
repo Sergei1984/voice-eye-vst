@@ -1,89 +1,40 @@
+use pixels::{Pixels, SurfaceTexture};
+
 use super::WINDOW_DIMENSIONS;
 
+const WIDTH: u32 = (WINDOW_DIMENSIONS.0 * 2) as u32;
+const HEIGHT: u32 = (WINDOW_DIMENSIONS.1 * 2) as u32;
+
 pub struct VoiceEyeRenderer {
-    device: wgpu::Device,
-    surface: wgpu::Surface,
-    queue: wgpu::Queue,
+    pixels: Pixels,
 }
 
 impl VoiceEyeRenderer {
     pub fn new<W: raw_window_handle::HasRawWindowHandle>(handle: W) -> Self {
-        let instance = wgpu::Instance::new(wgpu::Backends::PRIMARY);
+        let pixels =
+            Pixels::new(WIDTH, HEIGHT, SurfaceTexture::new(WIDTH, HEIGHT, &handle)).unwrap();
 
-        let surface = unsafe { instance.create_surface(&handle) };
-
-        let (device, queue) = futures::executor::block_on(async {
-            let adapter = instance
-                .request_adapter(&wgpu::RequestAdapterOptions {
-                    power_preference: wgpu::PowerPreference::HighPerformance,
-                    force_fallback_adapter: false,
-                    compatible_surface: Some(&surface),
-                })
-                .await
-                .unwrap();
-
-            adapter
-                .request_device(
-                    &wgpu::DeviceDescriptor {
-                        label: None,
-                        features: wgpu::Features::empty(),
-                        limits: wgpu::Limits::default(),
-                    },
-                    None,
-                )
-                .await
-                .unwrap()
-        });
-
-        let render_format = wgpu::TextureFormat::Bgra8Unorm;
-        let config = wgpu::SurfaceConfiguration {
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            format: render_format,
-            width: (WINDOW_DIMENSIONS.0 * 2) as u32,
-            height: (WINDOW_DIMENSIONS.1 * 2) as u32,
-            present_mode: wgpu::PresentMode::Mailbox,
-        };
-        surface.configure(&device, &config);
-
-        Self {
-            device,
-            queue,
-            surface,
-        }
+        Self { pixels }
     }
 
     pub fn draw_frame(&mut self) {
-        if let Ok(frame) = self.surface.get_current_texture() {
-            let view: wgpu::TextureView = frame
-                .texture
-                .create_view(&wgpu::TextureViewDescriptor::default());
+        let frame = self.pixels.get_frame();
 
-            let mut encoder = self
-                .device
-                .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+        for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
+            let x = (i % WIDTH as usize) as i16;
+            let y = (i / WIDTH as usize) as i16;
 
-            let render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: Some("clear screen"),
-                color_attachments: &[wgpu::RenderPassColorAttachment {
-                    view: &view,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 1.0,
-                            g: 0.0,
-                            b: 0.0,
-                            a: 1.0,
-                        }),
-                        store: true,
-                    },
-                }],
-                depth_stencil_attachment: None,
-            });
+            let inside_the_box = x >= 10 && x < 10 + 100 && y >= 20 && y < 20 + 100;
 
-            drop(render_pass);
+            let rgba = if inside_the_box {
+                [0x5e, 0x48, 0xe8, 0xff]
+            } else {
+                [0x48, 0xb2, 0xe8, 0xff]
+            };
 
-            self.queue.submit(std::iter::once(encoder.finish()));
-            frame.present();
+            pixel.copy_from_slice(&rgba);
         }
+
+        let _ = self.pixels.render();
     }
 }
