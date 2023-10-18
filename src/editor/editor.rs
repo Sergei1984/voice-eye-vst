@@ -4,7 +4,7 @@ use vst_window::{setup, EventSource};
 
 use super::renderer::VoiceEyeRenderer;
 
-const WINDOW_DIMENSIONS: (i32, i32) = (1200, 600);
+pub const WINDOW_DIMENSIONS: (i32, i32) = (1200, 600);
 
 pub struct VoiceEyeEditor {
     renderer: Option<VoiceEyeRenderer>,
