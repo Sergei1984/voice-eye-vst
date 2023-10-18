@@ -1,16 +1,24 @@
 use vst::{
     api::Supported,
     buffer::AudioBuffer,
+    editor::Editor,
     plugin::{CanDo, HostCallback, Info, Plugin},
 };
 
+mod editor;
+use editor::PluginEditor;
+
 /// Top level wrapper that exposes a full `vst::Plugin` implementation.
-struct VoiceEyeVst {}
+struct VoiceEyeVst {
+    editor: Option<PluginEditor>,
+}
 
 impl VoiceEyeVst {
     /// Initializes the VST plugin, along with an optional `HostCallback` handle.
     fn new_maybe_host(_maybe_host: Option<HostCallback>) -> Self {
-        Self {}
+        Self {
+            editor: Some(PluginEditor::new()),
+        }
     }
 }
 
@@ -56,6 +64,12 @@ impl Plugin for VoiceEyeVst {
 
     fn can_do(&self, _can_do: CanDo) -> Supported {
         Supported::Maybe
+    }
+
+    fn get_editor(&mut self) -> Option<Box<dyn Editor>> {
+        self.editor
+            .take()
+            .map(|editor| Box::new(editor) as Box<dyn Editor>)
     }
 }
 
