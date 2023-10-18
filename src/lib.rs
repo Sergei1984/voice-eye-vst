@@ -1,3 +1,4 @@
+use editor::VoiceEyeEditor;
 use vst::{
     api::Supported,
     buffer::AudioBuffer,
@@ -6,18 +7,17 @@ use vst::{
 };
 
 mod editor;
-use editor::PluginEditor;
 
 /// Top level wrapper that exposes a full `vst::Plugin` implementation.
 struct VoiceEyeVst {
-    editor: Option<PluginEditor>,
+    editor: Option<VoiceEyeEditor>,
 }
 
 impl VoiceEyeVst {
     /// Initializes the VST plugin, along with an optional `HostCallback` handle.
     fn new_maybe_host(_maybe_host: Option<HostCallback>) -> Self {
         Self {
-            editor: Some(PluginEditor::new()),
+            editor: Some(VoiceEyeEditor::new()),
         }
     }
 }
