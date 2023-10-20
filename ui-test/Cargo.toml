@@ -1,0 +1,31 @@
+[package]
+name = "voice-eye-ui-test"
+version = "0.1.1"
+authors = ["Serhii Tokariev <seregat1984@gmail.com>"]
+edition = "2018"
+resolver = "2"
+license = "MIT OR Apache-2.0"
+# build = "build.rs"
+
+# No reason to distribute a VST plugin on crates.io.
+publish = false
+
+
+[dependencies]
+vst = "^ 0.2"
+vst_window = "^ 0.3"
+once_cell = "^ 1.4"
+wgpu = { version = "^ 0.12", features = ["spirv"] }
+wgpu_glyph = "^ 0.16"
+raw-window-handle = "^ 0.4"
+zerocopy = "^ 0.3"
+cgmath = "^ 0.17"
+futures = "^ 0.3"
+png = "^ 0.16"
+pixels = "^0.9"
+tiny-skia = "0.8"
+cosmic-text = "0.9"
+winit = "0.26"
+
+[build-dependencies]
+glsl-to-spirv = "^ 0.1"
