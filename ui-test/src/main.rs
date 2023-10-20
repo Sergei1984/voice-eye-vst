@@ -1,3 +1,4 @@
+use cosmic_text::{FontSystem, SwashCache};
 use pixels::{Error, Pixels, SurfaceTexture};
 use winit::dpi::LogicalSize;
 use winit::event::{ElementState, Event, WindowEvent};
@@ -12,6 +13,11 @@ const HEIGHT: u32 = 600;
 mod draw;
 
 fn main() -> Result<(), Error> {
+    let mut state = State {
+        font_system: FontSystem::new(),
+        swash_cache: SwashCache::new(),
+    };
+
     let event_loop = EventLoop::new();
     let window = {
         let size = LogicalSize::new(WIDTH as f64, HEIGHT as f64);
@@ -44,10 +50,15 @@ fn main() -> Result<(), Error> {
                 _ => (),
             },
             Event::RedrawRequested(_) => {
-                let _ = draw(&mut pixels);
+                let _ = draw(&mut state, &mut pixels);
                 let _ = pixels.render();
             }
             _ => (),
         }
     });
+}
+
+pub struct State {
+    font_system: FontSystem,
+    swash_cache: SwashCache,
 }
