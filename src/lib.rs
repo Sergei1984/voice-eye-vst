@@ -7,6 +7,7 @@ use vst::{
 };
 
 mod editor;
+mod music;
 
 /// Top level wrapper that exposes a full `vst::Plugin` implementation.
 struct VoiceEyeVst {
