@@ -1,7 +1,4 @@
-use std::iter::once;
-use std::sync::Arc;
-
-use cosmic_text::{FontSystem, SwashCache};
+use draw::create_state;
 use pixels::{Error, Pixels, SurfaceTexture};
 use winit::dpi::LogicalSize;
 use winit::event::{ElementState, Event, WindowEvent};
@@ -13,17 +10,10 @@ use crate::draw::draw;
 const WIDTH: u32 = 1200;
 const HEIGHT: u32 = 600;
 
-const FONT: &[u8] = include_bytes!("../assets/fonts/Oswald-Bold.ttf");
-
 mod draw;
 
 fn main() -> Result<(), Error> {
-    let mut state = State {
-        font_system: FontSystem::new_with_fonts(once(cosmic_text::fontdb::Source::Binary(
-            Arc::new(FONT),
-        ))),
-        swash_cache: SwashCache::new(),
-    };
+    let mut state = create_state();
 
     let event_loop = EventLoop::new();
     let window = {
@@ -59,9 +49,4 @@ fn main() -> Result<(), Error> {
         }
         _ => (),
     });
-}
-
-pub struct State {
-    font_system: FontSystem,
-    swash_cache: SwashCache,
 }

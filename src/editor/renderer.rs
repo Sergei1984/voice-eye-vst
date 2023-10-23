@@ -1,14 +1,13 @@
+use cosmic_text::fontdb::Database;
 use cosmic_text::{Attrs, Buffer, FontSystem, Metrics, Shaping, SwashCache};
 use pixels::{Pixels, SurfaceTexture};
 use tiny_skia::{Color, Paint, PathBuilder, Pixmap, Rect, Transform};
-
-use std::fs::OpenOptions;
-use std::io::prelude::*;
 
 use super::WINDOW_DIMENSIONS;
 
 const WIDTH: u32 = (WINDOW_DIMENSIONS.0 * 2) as u32;
 const HEIGHT: u32 = (WINDOW_DIMENSIONS.1 * 2) as u32;
+const FONT: &[u8] = include_bytes!("../../assets/fonts/iosevka-Iosevka-medium.ttf");
 
 pub struct VoiceEyeRenderer {
     pixels: Pixels,
@@ -21,9 +20,14 @@ impl VoiceEyeRenderer {
         let pixels =
             Pixels::new(WIDTH, HEIGHT, SurfaceTexture::new(WIDTH, HEIGHT, &handle)).unwrap();
 
+        let db = Database::new();
+        let mut fs = FontSystem::new_with_locale_and_db("en-UA".to_string(), db);
+
+        fs.db_mut().load_font_data(FONT.into());
+
         Self {
             pixels,
-            font_system: FontSystem::new(),
+            font_system: fs,
             swash_cache: SwashCache::new(),
         }
     }
@@ -45,7 +49,7 @@ impl VoiceEyeRenderer {
             None,
         );
 
-        self.draw_text(&mut pixmap, "Hello, Rust! 🦀", 100, 100);
+        self.draw_text(&mut pixmap, "Hello, Rust!", 100, 100);
 
         let frame = self.pixels.get_frame();
         frame.copy_from_slice(pixmap.data());
@@ -54,12 +58,7 @@ impl VoiceEyeRenderer {
     }
 
     fn draw_text(&mut self, pixmap: &mut Pixmap, text: &str, origin_x: i32, origin_y: i32) {
-        let mut file = OpenOptions::new()
-            .create(true)
-            .write(true)
-            .append(true)
-            .open("/Users/sergiitokariev/Downloads/voice-eye-log.txt")
-            .unwrap();
+        let attrs = create_compatible_attrs(&self.font_system);
 
         let metrics = Metrics::new(30.0, 40.0);
         let mut buffer = Buffer::new(&mut self.font_system, metrics);
@@ -67,26 +66,20 @@ impl VoiceEyeRenderer {
 
         buffer.set_size(WIDTH as f32, HEIGHT as f32);
 
-        buffer.set_text(text, Attrs::new(), Shaping::Advanced);
+        buffer.set_text(text, attrs, Shaping::Advanced);
         buffer.shape_until_scroll();
 
         let text_color = cosmic_text::Color::rgb(0x0, 0xFF, 0x0);
 
         let mut paint = Paint::default();
 
-        writeln!(file, "Draw text {}", text).unwrap();
-
         buffer.draw(&mut self.swash_cache, text_color, |x, y, w, h, color| {
-            // paint.set_color(Color::from_rgba8(
-            //     color.r(),
-            //     color.g(),
-            //     color.b(),
-            //     color.a(),
-            // ));
-
-            writeln!(file, "x={} y={} w={} h={}", x, y, w, h).unwrap();
-
-            paint.set_color(Color::from_rgba8(255, 10, 10, 255));
+            paint.set_color(Color::from_rgba8(
+                color.r(),
+                color.g(),
+                color.b(),
+                color.a(),
+            ));
 
             pixmap.fill_rect(
                 Rect::from_xywh(
@@ -101,7 +94,14 @@ impl VoiceEyeRenderer {
                 None,
             );
         });
-
-        file.flush().unwrap();
     }
+}
+
+fn create_compatible_attrs<'a>(font_system: &FontSystem) -> Attrs<'a> {
+    let font = font_system.db().faces().next().unwrap();
+
+    Attrs::new()
+        .style(font.style)
+        .weight(font.weight)
+        .stretch(font.stretch)
 }
