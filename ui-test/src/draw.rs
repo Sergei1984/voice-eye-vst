@@ -30,13 +30,22 @@ pub fn draw(state: &mut State, pixels: &mut Pixels) -> Result<(), Error> {
 }
 
 fn draw_text(state: &mut State, pixmap: &mut Pixmap, text: &str, origin_x: i32, origin_y: i32) {
+    println!("Fonts in db {}", state.font_system.db().len());
+    for f in state.font_system.db().faces() {
+        println!("ID={} PSN={}", f.id, f.post_script_name);
+    }
+
     let metrics = Metrics::new(30.0, 40.0);
     let mut buffer = Buffer::new(&mut state.font_system, metrics);
+
     let mut buffer = buffer.borrow_with(&mut state.font_system);
 
     buffer.set_size(WIDTH as f32, HEIGHT as f32);
 
-    buffer.set_text(text, Attrs::new(), Shaping::Advanced);
+    let attrs = Attrs::new();
+    attrs.attrs.family(cosmic_text::Family::Name("Oswald Bold"));
+
+    buffer.set_text(text, attrs, Shaping::Advanced);
     buffer.shape_until_scroll();
 
     let text_color = cosmic_text::Color::rgb(0x0, 0xFF, 0x0);
