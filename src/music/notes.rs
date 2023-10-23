@@ -53,6 +53,11 @@ impl Frequency {
         let n: usize = (note as u8) as usize;
         NOTE_FREQUENCIES[o * 12 + n]
     }
+
+    pub fn project(frequency: f32, low_frequency: f32, high_frequency: f32, heigh: u32) -> u32 {
+        ((frequency / low_frequency).log2() * (heigh as f32)
+            / (high_frequency / low_frequency).log2()) as u32
+    }
 }
 
 const NOTE_FREQUENCIES: [f32; 108] = [
