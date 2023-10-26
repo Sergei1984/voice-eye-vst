@@ -7,11 +7,15 @@
 SYNTH_NAME=VoiceEye
 BUILD_OUTPUT=target/libvoice_eye.dylib
 
+cargo build --target x86_64-apple-darwin --release && cargo build --target aarch64-apple-darwin --release
+
+if [ $? -ne 0 ]
+then
+    echo "Build failed"
+    exit -1
+fi
+
 rm -r "${SYNTH_NAME}.vst"
-
-
-cargo build --target x86_64-apple-darwin --release
-cargo build --target aarch64-apple-darwin --release
 
 lipo -create ./target/x86_64-apple-darwin/release/libvoice_eye.dylib  ./target/aarch64-apple-darwin/release/libvoice_eye.dylib -output ${BUILD_OUTPUT}
 

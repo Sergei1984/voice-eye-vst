@@ -1,7 +1,5 @@
-use std::fs::{File, OpenOptions};
-use std::io::prelude::*;
-
 use editor::VoiceEyeEditor;
+use music::MyPitchDetector;
 use vst::{
     api::Supported,
     buffer::AudioBuffer,
@@ -15,22 +13,17 @@ mod music;
 /// Top level wrapper that exposes a full `vst::Plugin` implementation.
 struct VoiceEyeVst {
     editor: Option<VoiceEyeEditor>,
-    file: File,
+    pitch_detector: MyPitchDetector,
+    sample_rate: f32,
 }
 
 impl VoiceEyeVst {
     /// Initializes the VST plugin, along with an optional `HostCallback` handle.
     fn new_maybe_host(_maybe_host: Option<HostCallback>) -> Self {
-        let file = OpenOptions::new()
-            .create(true)
-            .write(true)
-            .append(true)
-            .open("/Users/sergiitokariev/Downloads/voice-eye-log.txt")
-            .unwrap();
-
         Self {
             editor: Some(VoiceEyeEditor::new()),
-            file,
+            pitch_detector: MyPitchDetector::new(),
+            sample_rate: 0.0,
         }
     }
 }
@@ -73,22 +66,15 @@ impl Plugin for VoiceEyeVst {
         }
     }
 
+    fn set_sample_rate(&mut self, rate: f32) {
+        self.sample_rate = rate;
+    }
+
     fn process(&mut self, buffer: &mut AudioBuffer<f32>) {
-        let inputs = buffer.input_count();
         let (input, _) = buffer.split();
+        let samples = input.get(0);
 
-        for ch in 0..inputs {
-            let b = input.get(ch);
-            let s = b
-                .iter()
-                .map(|f| format!("{}", f))
-                .collect::<Vec<_>>()
-                .join(",");
-
-            let _ = writeln!(&self.file, "{}", s);
-        }
-
-        let _ = writeln!(&self.file, "");
+        self.pitch_detector.detect(self.sample_rate, samples);
     }
 
     fn can_do(&self, _can_do: CanDo) -> Supported {
