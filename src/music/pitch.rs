@@ -33,12 +33,13 @@ impl MyPitchDetector {
 
         let result = self
             .detector
-            .get_pitch(buffer, sample_rate as usize, 5.0, 0.7);
+            .get_pitch(buffer, sample_rate as usize, 1.0, 0.4);
 
         if let Some(pitch) = result {
             if (self.last_freq - pitch.frequency).abs() > 0.1 {
                 self.last_freq = pitch.frequency;
                 let _ = writeln!(self.file, "{:?}: {}", self.time.elapsed(), self.last_freq);
+                let _ = self.file.flush();
             }
         }
     }
