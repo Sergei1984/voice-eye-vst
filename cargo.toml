@@ -27,6 +27,7 @@ png = "^ 0.16"
 pixels = "^0.9"
 tiny-skia = "0.8"
 cosmic-text = "0.9"
+base64 = "0.21"
 
 [build-dependencies]
 glsl-to-spirv = "^ 0.1"

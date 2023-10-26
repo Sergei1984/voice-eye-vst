@@ -1,3 +1,6 @@
+use std::fs::{File, OpenOptions};
+use std::io::prelude::*;
+
 use editor::VoiceEyeEditor;
 use vst::{
     api::Supported,
@@ -12,13 +15,22 @@ mod music;
 /// Top level wrapper that exposes a full `vst::Plugin` implementation.
 struct VoiceEyeVst {
     editor: Option<VoiceEyeEditor>,
+    file: File,
 }
 
 impl VoiceEyeVst {
     /// Initializes the VST plugin, along with an optional `HostCallback` handle.
     fn new_maybe_host(_maybe_host: Option<HostCallback>) -> Self {
+        let file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .append(true)
+            .open("/Users/sergiitokariev/Downloads/voice-eye-log.txt")
+            .unwrap();
+
         Self {
             editor: Some(VoiceEyeEditor::new()),
+            file,
         }
     }
 }
@@ -61,7 +73,23 @@ impl Plugin for VoiceEyeVst {
         }
     }
 
-    fn process(&mut self, _buffer: &mut AudioBuffer<f32>) {}
+    fn process(&mut self, buffer: &mut AudioBuffer<f32>) {
+        let inputs = buffer.input_count();
+        let (input, _) = buffer.split();
+
+        for ch in 0..inputs {
+            let b = input.get(ch);
+            let s = b
+                .iter()
+                .map(|f| format!("{}", f))
+                .collect::<Vec<_>>()
+                .join(",");
+
+            let _ = writeln!(&self.file, "{}", s);
+        }
+
+        let _ = writeln!(&self.file, "");
+    }
 
     fn can_do(&self, _can_do: CanDo) -> Supported {
         Supported::Maybe
