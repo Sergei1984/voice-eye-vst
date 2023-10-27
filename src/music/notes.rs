@@ -17,6 +17,7 @@
 // })();
 
 #[repr(u8)]
+#[derive(Copy, Clone)]
 pub enum Note {
     C = 0,
     CSharp = 1,
@@ -32,7 +33,39 @@ pub enum Note {
     B = 11,
 }
 
+impl Note {
+    pub fn all() -> Vec<Note> {
+        vec![
+            Self::C,
+            Self::CSharp,
+            Self::D,
+            Self::DSharp,
+            Self::E,
+            Self::F,
+            Self::FSharp,
+            Self::G,
+            Self::GSharp,
+            Self::A,
+            Self::ASharp,
+            Self::B,
+        ]
+    }
+
+    pub fn all_non_altered() -> Vec<Note> {
+        vec![
+            Self::C,
+            Self::D,
+            Self::E,
+            Self::F,
+            Self::G,
+            Self::A,
+            Self::B,
+        ]
+    }
+}
+
 #[repr(u8)]
+#[derive(Copy, Clone)]
 pub enum Octave {
     SubContra = 0,
     Contra = 1,

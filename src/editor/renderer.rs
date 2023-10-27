@@ -6,9 +6,10 @@ use cosmic_text::fontdb::Database;
 use cosmic_text::{Attrs, Buffer, FontSystem, Metrics, Shaping, SwashCache};
 use futures::lock::Mutex;
 use pixels::{Pixels, SurfaceTexture};
-use tiny_skia::{Color, Paint, Pixmap, Rect, Transform};
+use tiny_skia::{Color, Paint, PathBuilder, Pixmap, Rect, Stroke, Transform};
 
 use crate::model::MeasureModel;
+use crate::music::{Frequency, Note, Octave};
 
 use super::WINDOW_DIMENSIONS;
 
@@ -98,7 +99,46 @@ impl VoiceEyeRenderer {
     }
 
     fn draw_chart(&mut self, _model: &MeasureModel, pixmap: &mut Pixmap) {
-        pixmap.fill(Color::from_rgba8(100, 100, 255, 255));
+        pixmap.fill(Color::from_rgba8(0, 0, 0, 255));
+
+        let padding_height = 20;
+        let height = HEIGHT - 2 * padding_height;
+
+        let lower_freq = Frequency::of(Octave::Small, Note::C);
+        let higher_freq = Frequency::of(Octave::Second, Note::B);
+
+        let mut stroke = Stroke::default();
+        stroke.width = 2.0;
+
+        let mut note_line_paint = Paint::default();
+        note_line_paint.set_color_rgba8(255, 255, 255, 255);
+
+        for octave in [Octave::Small, Octave::First, Octave::Second] {
+            for note in Note::all_non_altered() {
+                let freq = Frequency::of(octave, note);
+
+                let y = (height
+                    - padding_height
+                    - Frequency::project(freq, lower_freq, higher_freq, height))
+                    as f32;
+
+                let path = {
+                    let mut builder = PathBuilder::new();
+                    builder.move_to(0.0, y);
+                    builder.line_to(WIDTH as f32, y);
+
+                    builder.finish().unwrap()
+                };
+
+                pixmap.stroke_path(
+                    &path,
+                    &note_line_paint,
+                    &stroke,
+                    Transform::identity(),
+                    None,
+                );
+            }
+        }
     }
 }
 
