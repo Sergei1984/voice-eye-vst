@@ -64,6 +64,25 @@ impl Note {
     }
 }
 
+impl std::fmt::Display for Note {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Note::C => f.write_str("C"),
+            Note::CSharp => f.write_str("C#"),
+            Note::D => f.write_str("D"),
+            Note::DSharp => f.write_str("D#"),
+            Note::E => f.write_str("E"),
+            Note::F => f.write_str("F"),
+            Note::FSharp => f.write_str("F#"),
+            Note::G => f.write_str("G"),
+            Note::GSharp => f.write_str("G#"),
+            Note::A => f.write_str("A"),
+            Note::ASharp => f.write_str("A#"),
+            Note::B => f.write_str("B"),
+        }
+    }
+}
+
 #[repr(u8)]
 #[derive(Copy, Clone)]
 pub enum Octave {
@@ -76,6 +95,22 @@ pub enum Octave {
     Third = 6,
     Fourth = 7,
     Fifth = 8,
+}
+
+impl std::fmt::Display for Octave {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Octave::SubContra => f.write_str("0"),
+            Octave::Contra => f.write_str("1"),
+            Octave::Big => f.write_str("2"),
+            Octave::Small => f.write_str("3"),
+            Octave::First => f.write_str("4"),
+            Octave::Second => f.write_str("5"),
+            Octave::Third => f.write_str("6"),
+            Octave::Fourth => f.write_str("7"),
+            Octave::Fifth => f.write_str("8"),
+        }
+    }
 }
 
 pub struct Frequency;

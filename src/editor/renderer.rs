@@ -101,7 +101,7 @@ impl VoiceEyeRenderer {
     fn draw_chart(&mut self, _model: &MeasureModel, pixmap: &mut Pixmap) {
         pixmap.fill(Color::from_rgba8(0, 0, 0, 255));
 
-        let padding_height = 20;
+        let padding_height = 40;
         let height = HEIGHT - 2 * padding_height;
 
         let lower_freq = Frequency::of(Octave::Small, Note::C);
@@ -111,7 +111,7 @@ impl VoiceEyeRenderer {
         stroke.width = 2.0;
 
         let mut note_line_paint = Paint::default();
-        note_line_paint.set_color_rgba8(255, 255, 255, 255);
+        note_line_paint.set_color_rgba8(120, 120, 120, 255);
 
         for octave in [Octave::Small, Octave::First, Octave::Second] {
             for note in Note::all_non_altered() {
@@ -136,6 +136,13 @@ impl VoiceEyeRenderer {
                     &stroke,
                     Transform::identity(),
                     None,
+                );
+
+                self.draw_text(
+                    pixmap,
+                    format!("{}{}", note, octave).as_str(),
+                    10,
+                    (y) as i32,
                 );
             }
         }
