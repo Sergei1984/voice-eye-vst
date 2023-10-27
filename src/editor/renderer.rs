@@ -117,7 +117,7 @@ impl VoiceEyeRenderer {
             for note in Note::all_non_altered() {
                 let freq = Frequency::of(octave, note);
 
-                let y = (height
+                let y = (HEIGHT
                     - padding_height
                     - Frequency::project(freq, lower_freq, higher_freq, height))
                     as f32;
