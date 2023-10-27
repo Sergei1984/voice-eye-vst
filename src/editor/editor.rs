@@ -1,6 +1,10 @@
 use core::ffi::c_void;
+use futures::lock::Mutex;
+use std::sync::Arc;
 use vst::editor::Editor;
 use vst_window::{setup, EventSource};
+
+use crate::model::MeasureModel;
 
 use super::renderer::VoiceEyeRenderer;
 
@@ -9,13 +13,15 @@ pub const WINDOW_DIMENSIONS: (i32, i32) = (1200, 600);
 pub struct VoiceEyeEditor {
     renderer: Option<VoiceEyeRenderer>,
     window_events: Option<EventSource>,
+    model: Arc<Mutex<MeasureModel>>,
 }
 
 impl VoiceEyeEditor {
-    pub fn new() -> Self {
+    pub fn new(model: Arc<Mutex<MeasureModel>>) -> Self {
         Self {
             renderer: None,
             window_events: None,
+            model,
         }
     }
 }
@@ -32,7 +38,10 @@ impl Editor for VoiceEyeEditor {
     fn open(&mut self, parent: *mut c_void) -> bool {
         if self.window_events.is_none() {
             let (window_handle, event_source) = setup(parent, WINDOW_DIMENSIONS);
-            self.renderer = Some(VoiceEyeRenderer::new(window_handle));
+            self.renderer = Some(VoiceEyeRenderer::new(
+                window_handle,
+                Arc::clone(&self.model),
+            ));
             self.window_events = Some(event_source);
             true
         } else {

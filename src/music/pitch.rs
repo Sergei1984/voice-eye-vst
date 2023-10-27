@@ -1,28 +1,23 @@
+use futures::lock::Mutex;
 use pitch_detection::detector::mcleod::McLeodDetector;
 use pitch_detection::detector::PitchDetector;
-use std::fs::{File, OpenOptions};
-use std::io::prelude::*;
-use std::time::Instant;
+use std::{
+    sync::Arc,
+    time::{SystemTime, UNIX_EPOCH},
+};
+
+use crate::model::MeasureModel;
 
 pub struct MyPitchDetector {
-    last_freq: f32,
-    file: File,
     detector: McLeodDetector<f32>,
-    time: Instant,
+    model: Arc<Mutex<MeasureModel>>,
 }
 
 impl MyPitchDetector {
-    pub fn new() -> Self {
+    pub fn new(model: Arc<Mutex<MeasureModel>>) -> Self {
         MyPitchDetector {
-            last_freq: 0.0,
-            file: OpenOptions::new()
-                .create(true)
-                .write(true)
-                .append(true)
-                .open("/Users/sergiitokariev/Downloads/voice-eye-log.txt")
-                .unwrap(),
             detector: McLeodDetector::new(512, 256),
-            time: Instant::now(),
+            model: model,
         }
     }
 
@@ -31,16 +26,20 @@ impl MyPitchDetector {
             return;
         }
 
+        let time = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis();
+
         let result = self
             .detector
             .get_pitch(buffer, sample_rate as usize, 1.0, 0.4);
 
         if let Some(pitch) = result {
-            if (self.last_freq - pitch.frequency).abs() > 0.1 {
-                self.last_freq = pitch.frequency;
-                let _ = writeln!(self.file, "{:?}: {}", self.time.elapsed(), self.last_freq);
-                let _ = self.file.flush();
-            }
+            futures::executor::block_on(async {
+                let mut m = self.model.lock().await;
+                m.add_measure(time, pitch.frequency);
+            });
         }
     }
 }

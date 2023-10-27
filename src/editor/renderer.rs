@@ -1,7 +1,14 @@
+#![allow(dead_code)]
+
+use std::sync::Arc;
+
 use cosmic_text::fontdb::Database;
 use cosmic_text::{Attrs, Buffer, FontSystem, Metrics, Shaping, SwashCache};
+use futures::lock::Mutex;
 use pixels::{Pixels, SurfaceTexture};
-use tiny_skia::{Color, Paint, PathBuilder, Pixmap, Rect, Transform};
+use tiny_skia::{Color, Paint, Pixmap, Rect, Transform};
+
+use crate::model::MeasureModel;
 
 use super::WINDOW_DIMENSIONS;
 
@@ -13,10 +20,14 @@ pub struct VoiceEyeRenderer {
     pixels: Pixels,
     font_system: FontSystem,
     swash_cache: SwashCache,
+    model: Arc<Mutex<MeasureModel>>,
 }
 
 impl VoiceEyeRenderer {
-    pub fn new<W: raw_window_handle::HasRawWindowHandle>(handle: W) -> Self {
+    pub fn new<W: raw_window_handle::HasRawWindowHandle>(
+        handle: W,
+        model: Arc<Mutex<MeasureModel>>,
+    ) -> Self {
         let pixels =
             Pixels::new(WIDTH, HEIGHT, SurfaceTexture::new(WIDTH, HEIGHT, &handle)).unwrap();
 
@@ -29,32 +40,22 @@ impl VoiceEyeRenderer {
             pixels,
             font_system: fs,
             swash_cache: SwashCache::new(),
+            model,
         }
     }
 
     pub fn draw_frame(&mut self) {
         let mut pixmap = Pixmap::new(WIDTH, HEIGHT).unwrap();
-        pixmap.fill(Color::from_rgba8(100, 100, 255, 255));
+        let r = Arc::clone(&self.model);
 
-        let circle = PathBuilder::from_circle(600.0, 600.0, 200.0).unwrap();
+        if let Some(model) = r.try_lock() {
+            self.draw_chart(&model, &mut pixmap);
 
-        let mut paint = Paint::default();
-        paint.set_color(Color::from_rgba8(255, 10, 10, 255));
+            let frame = self.pixels.get_frame();
+            frame.copy_from_slice(pixmap.data());
 
-        pixmap.fill_path(
-            &circle,
-            &paint,
-            tiny_skia::FillRule::Winding,
-            Transform::identity(),
-            None,
-        );
-
-        self.draw_text(&mut pixmap, "Hello, Rust!", 100, 100);
-
-        let frame = self.pixels.get_frame();
-        frame.copy_from_slice(pixmap.data());
-
-        let _ = self.pixels.render();
+            let _ = self.pixels.render();
+        };
     }
 
     fn draw_text(&mut self, pixmap: &mut Pixmap, text: &str, origin_x: i32, origin_y: i32) {
@@ -94,6 +95,10 @@ impl VoiceEyeRenderer {
                 None,
             );
         });
+    }
+
+    fn draw_chart(&mut self, _model: &MeasureModel, pixmap: &mut Pixmap) {
+        pixmap.fill(Color::from_rgba8(100, 100, 255, 255));
     }
 }
 

@@ -1,4 +1,8 @@
+use std::sync::Arc;
+
 use editor::VoiceEyeEditor;
+use futures::lock::Mutex;
+use model::MeasureModel;
 use music::MyPitchDetector;
 use vst::{
     api::Supported,
@@ -8,6 +12,7 @@ use vst::{
 };
 
 mod editor;
+mod model;
 mod music;
 
 /// Top level wrapper that exposes a full `vst::Plugin` implementation.
@@ -20,9 +25,11 @@ struct VoiceEyeVst {
 impl VoiceEyeVst {
     /// Initializes the VST plugin, along with an optional `HostCallback` handle.
     fn new_maybe_host(_maybe_host: Option<HostCallback>) -> Self {
+        let model = Arc::new(Mutex::new(MeasureModel::new()));
+
         Self {
-            editor: Some(VoiceEyeEditor::new()),
-            pitch_detector: MyPitchDetector::new(),
+            editor: Some(VoiceEyeEditor::new(Arc::clone(&model))),
+            pitch_detector: MyPitchDetector::new(Arc::clone(&model)),
             sample_rate: 0.0,
         }
     }
