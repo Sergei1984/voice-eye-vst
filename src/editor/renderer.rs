@@ -50,7 +50,7 @@ impl VoiceEyeRenderer {
         let r = Arc::clone(&self.model);
 
         if let Some(model) = r.try_lock() {
-            self.draw_chart(&model, &mut pixmap);
+            self.draw(&model, &mut pixmap);
 
             let frame = self.pixels.get_frame();
             frame.copy_from_slice(pixmap.data());
@@ -98,7 +98,7 @@ impl VoiceEyeRenderer {
         });
     }
 
-    fn draw_chart(&mut self, _model: &MeasureModel, pixmap: &mut Pixmap) {
+    fn draw(&mut self, _model: &MeasureModel, pixmap: &mut Pixmap) {
         pixmap.fill(Color::from_rgba8(0, 0, 0, 255));
 
         let padding_height = 40;
@@ -107,12 +107,21 @@ impl VoiceEyeRenderer {
         let lower_freq = Frequency::of(Octave::Small, Note::C);
         let higher_freq = Frequency::of(Octave::Second, Note::B);
 
+        self.draw_note_grid(padding_height, lower_freq, higher_freq, height, pixmap);
+    }
+
+    fn draw_note_grid(
+        &mut self,
+        padding_height: u32,
+        lower_freq: f32,
+        higher_freq: f32,
+        height: u32,
+        pixmap: &mut Pixmap,
+    ) {
         let mut stroke = Stroke::default();
         stroke.width = 2.0;
-
         let mut note_line_paint = Paint::default();
         note_line_paint.set_color_rgba8(120, 120, 120, 255);
-
         for octave in [Octave::Small, Octave::First, Octave::Second] {
             for note in Note::all_non_altered() {
                 let freq = Frequency::of(octave, note);

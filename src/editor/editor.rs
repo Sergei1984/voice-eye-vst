@@ -8,7 +8,7 @@ use crate::model::MeasureModel;
 
 use super::renderer::VoiceEyeRenderer;
 
-pub const WINDOW_DIMENSIONS: (i32, i32) = (1200, 600);
+pub const WINDOW_DIMENSIONS: (i32, i32) = (1200, 800);
 
 pub struct VoiceEyeEditor {
     renderer: Option<VoiceEyeRenderer>,
