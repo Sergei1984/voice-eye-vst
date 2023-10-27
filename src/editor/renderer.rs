@@ -98,7 +98,7 @@ impl VoiceEyeRenderer {
         });
     }
 
-    fn draw(&mut self, _model: &MeasureModel, pixmap: &mut Pixmap) {
+    fn draw(&mut self, model: &MeasureModel, pixmap: &mut Pixmap) {
         pixmap.fill(Color::from_rgba8(0, 0, 0, 255));
 
         let padding_height = 40;
@@ -108,6 +108,16 @@ impl VoiceEyeRenderer {
         let higher_freq = Frequency::of(Octave::Second, Note::B);
 
         self.draw_note_grid(padding_height, lower_freq, higher_freq, height, pixmap);
+
+        let mut freq_stroke = Stroke::default();
+        freq_stroke.width = 3.0;
+
+        let pad_left = 40;
+        let duration_ms = 5 * 60 * 1000;
+
+        let mut builder = PathBuilder::new();
+
+        for m in model.latest(duration_ms) {}
     }
 
     fn draw_note_grid(
