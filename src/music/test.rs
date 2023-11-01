@@ -33,7 +33,5 @@ mod test {
         assert!(a5_height.abs_diff(500) < 2);
         assert!(a6_height.abs_diff(750) < 2);
         assert!(a7_height.abs_diff(1000) < 2);
-
-        assert!(false);
     }
 }
