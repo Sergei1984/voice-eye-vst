@@ -18,7 +18,7 @@ mod test {
     }
 
     #[test]
-    fn average_aggregate_measure_works() {
+    fn average_aggregate_measure_on_current_bucket_works() {
         let mut model = MeasureModel::new();
 
         let start_time = Instant::now();
@@ -29,14 +29,28 @@ mod test {
         model.add_measure(start_time + Duration::from_millis(30), 250.0);
         model.add_measure(start_time + Duration::from_millis(40), 120.0);
 
+        model.add_measure(start_time + Duration::from_millis(200), 200.0);
+        model.add_measure(start_time + Duration::from_millis(210), 220.0);
+        model.add_measure(start_time + Duration::from_millis(220), 240.0);
+        model.add_measure(start_time + Duration::from_millis(230), 250.0);
+        model.add_measure(start_time + Duration::from_millis(240), 120.0);
+
         model.current_filling_bucket.flush_aggregation();
 
-        assert_eq!(model.current().len(), 1);
+        assert_eq!(model.current().len(), 2);
 
-        let measure = model.current().measures().next().unwrap();
-        assert_eq!(measure.time, start_time);
+        let measure1 = model.current().measures().next().unwrap();
+
+        assert_eq!(measure1.time, start_time);
         assert_eq!(
-            measure.frequency,
+            measure1.frequency,
+            (200.0 + 220.0 + 240.0 + 250.0 + 120.0) / 5.0
+        );
+
+        let measure2 = model.current().measures().skip(1).next().unwrap();
+        assert_eq!(measure2.time, start_time + Duration::from_millis(200));
+        assert_eq!(
+            measure2.frequency,
             (200.0 + 220.0 + 240.0 + 250.0 + 120.0) / 5.0
         );
     }

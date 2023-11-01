@@ -34,8 +34,6 @@ impl FrequencyBucket {
     pub fn push_measure(&mut self, time: Instant, frequency: f32) {
         if !self.avg_buffer.is_empty() && (time - self.avg_time) > PITCH_RESOLUTION {
             self.flush_aggregation();
-
-            self.avg_time = time;
             self.avg_buffer.clear();
         }
 

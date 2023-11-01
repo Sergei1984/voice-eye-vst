@@ -23,12 +23,10 @@ pub struct MeasureModel {
 
 impl MeasureModel {
     pub fn new() -> Self {
-        let mut result = MeasureModel {
+        MeasureModel {
             buckets: VecDeque::new(),
             current_filling_bucket: FrequencyBucket::new(),
-        };
-
-        result
+        }
     }
 
     pub fn len(&self) -> usize {
