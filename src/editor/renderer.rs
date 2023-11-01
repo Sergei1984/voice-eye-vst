@@ -113,11 +113,9 @@ impl VoiceEyeRenderer {
         freq_stroke.width = 3.0;
 
         let pad_left = 40;
-        let duration_ms = 5 * 60 * 1000;
+        let duration_ms = 1 * 60 * 1000;
 
         let mut builder = PathBuilder::new();
-
-        for m in model.latest(duration_ms) {}
     }
 
     fn draw_note_grid(

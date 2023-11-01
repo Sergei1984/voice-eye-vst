@@ -3,7 +3,7 @@ use pitch_detection::detector::mcleod::McLeodDetector;
 use pitch_detection::detector::PitchDetector;
 use std::{
     sync::Arc,
-    time::{SystemTime, UNIX_EPOCH},
+    time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
 use crate::model::MeasureModel;
@@ -26,10 +26,7 @@ impl MyPitchDetector {
             return;
         }
 
-        let time = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_millis();
+        let time = Instant::now();
 
         let result = self
             .detector
