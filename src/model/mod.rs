@@ -52,9 +52,22 @@ impl MeasureModel {
         &self.current_filling_bucket
     }
 
-    // /// Iterates frequency measures starting from the newest
-    // /// until total length of consequent parts less than specified duration
-    // pub fn latest(&self, total_duration: Duration) -> impl Iterator<Item = &FrequencyBucket> + '_ {
-    //     todo!()
-    // }
+    /// Iterates frequency measures starting from the newest
+    /// until total length of consequent parts less than specified duration
+    pub fn latest(&self, total_duration: Duration) -> impl Iterator<Item = &FrequencyBucket> + '_ {
+        let mut remaining = total_duration - self.current().duration();
+
+        std::iter::once(self.current()).chain(self.buckets.iter().rev().take_while(move |b| {
+            if remaining.is_zero() {
+                false
+            } else {
+                remaining = if remaining < b.duration() {
+                    Duration::default()
+                } else {
+                    remaining - b.duration()
+                };
+                true
+            }
+        }))
+    }
 }

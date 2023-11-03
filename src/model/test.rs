@@ -54,4 +54,47 @@ mod test {
             (200.0 + 220.0 + 240.0 + 250.0 + 120.0) / 5.0
         );
     }
+
+    #[test]
+    fn latest_works() {
+        let mut model = MeasureModel::new();
+
+        let mut start_time = Instant::now();
+
+        model.add_measure(start_time + Duration::default(), 200.0);
+        model.add_measure(start_time + Duration::from_millis(10), 220.0);
+        model.add_measure(start_time + Duration::from_millis(20), 240.0);
+        model.add_measure(start_time + Duration::from_millis(30), 250.0);
+        model.add_measure(start_time + Duration::from_millis(40), 120.0);
+
+        start_time = start_time + Duration::from_secs(3);
+        model.add_measure(start_time + Duration::default(), 200.0);
+        model.add_measure(start_time + Duration::from_millis(10), 220.0);
+        model.add_measure(start_time + Duration::from_millis(220), 240.0);
+        model.add_measure(start_time + Duration::from_millis(230), 250.0);
+        model.add_measure(start_time + Duration::from_millis(240), 120.0);
+
+        start_time = start_time + Duration::from_secs(5);
+        model.add_measure(start_time + Duration::default(), 10.0);
+        model.add_measure(start_time + Duration::from_millis(10), 10.0);
+        model.add_measure(start_time + Duration::from_millis(220), 10.0);
+        model.add_measure(start_time + Duration::from_millis(230), 10.0);
+        model.add_measure(start_time + Duration::from_millis(240), 10.0);
+
+        let buckets = model.latest(Duration::from_secs(2)).collect::<Vec<_>>();
+
+        assert_eq!(2, buckets.len());
+
+        assert_eq!(
+            10.0,
+            buckets
+                .iter()
+                .last()
+                .unwrap()
+                .measures()
+                .next()
+                .unwrap()
+                .frequency
+        );
+    }
 }
